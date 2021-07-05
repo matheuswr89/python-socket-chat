@@ -1,44 +1,59 @@
-import socket, threading
+import socket, threading, sys
 
-host = '10.8.0.8'
-port = 7976                                                 #Choosing unreserved port
+# Verifica se o nome e os argumentos foram corretamente entrados
+if(len(sys.argv) < 2) :
+    print('Uso: python chat_server.py PORT')
+    sys.exit()
+# Verifica se a porta é um numero inteiro
+try:
+    PORT = int(sys.argv[1])
+except:
+    print('Forneça uma porta!')
+    sys.exit()
 
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  #socket initialization
-server.bind((host, port))                                   #binding host and port to socket
+#inicia o socket
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
+#associando o host e a porta
+server.bind(('10.8.0.8', PORT))                                   
 server.listen()
+print("Server inicializado na porta " + str(PORT))
 
 clients = []
 nicknames = []
 
-def broadcast(message):                                     #broadcast function declaration
+#função de transmissão
+def broadcast(message):
     for client in clients:
         client.send(message)
 
 def handle(client):                                         
     while True:
-        try:                                                #recieving valid messages from client
-            message = client.recv(1024)
+        #verifica se recebe uma mensagem de um usuario valido
+        try:
+            message = client.recv(4096)
             broadcast(message)
-        except:                                             #removing clients
+        except:
+            # exclui um usuario
             index = clients.index(client)
             clients.remove(client)
             client.close()
             nickname = nicknames[index]
-            broadcast('{} left!'.format(nickname).encode('utf-8'))
+            broadcast('{} saiu da conversa!'.format(nickname).encode('utf-8'))
             nicknames.remove(nickname)
             break
 
-def receive():                                              #accepting multiple clients
+#permite o acesso de varios usuarios
+def receive():
     while True:
         client, address = server.accept()
-        print("Connected with {}".format(str(address)))       
+        print("Conectado com {}".format(str(address)))       
         client.send('NICKNAME'.encode('utf-8'))
-        nickname = client.recv(1024).decode('utf-8')
+        nickname = client.recv(4096).decode('utf-8')
         nicknames.append(nickname)
         clients.append(client)
-        print("Nickname is {}".format(nickname))
-        broadcast("{} joined!".format(nickname).encode('utf-8'))
-        client.send('Connected to server!'.encode('utf-8'))
+        print("Seu nickname {}".format(nickname))
+        broadcast("{} entrou!".format(nickname).encode('utf-8'))
+        client.send('Digite \'exit\' para sair da conversa!'.encode('utf-8'))
         thread = threading.Thread(target=handle, args=(client,))
         thread.start()
 

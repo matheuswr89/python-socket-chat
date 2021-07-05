@@ -1,31 +1,62 @@
-import socket, threading
-nickname = input("Choose your nickname: ")
+import socket, threading,sys
 
-hostname = socket.gethostname()
-host = str(socket.gethostbyname(hostname))                      #get machine intern ip
+# Verifica se o nome e os argumentos foram corretamente entrados
+if(len(sys.argv) < 3) :
+    print('Uso: python client.py SERVER-IP PORT')
+    sys.exit()
+    
+host = sys.argv[1]
+# Verifica se a porta é um numero inteiro
+try:
+    port = int(sys.argv[2])
+except:
+    print('Forneça a porta do servidor')
+    sys.exit()
 
-client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)      #socket initialization
-client.connect((host, 7976))                                    #connecting client to server
+#verifica se é possivel conectar com o servidor
+try:
+    #inicia o socket
+    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    #conecta o usuario ao servidor
+    client.connect((host, port))
+except:
+    print('Erro ao conectar com o servidor')
+    sys.exit()
 
+nickname = input("Escolha o seu nickname: ")
+
+# fazendo uma conexão valida
 def receive():
-    while True:                                                 #making valid connection
+    while True:
         try:
             message = client.recv(1024).decode('utf-8')
             if message == 'NICKNAME':
                 client.send(nickname.encode('utf-8'))
             else:
                 print(message)
-        except:                                                 #case on wrong ip/port details
-            print("An error occured!")
-            client.close()
+        except:
+            if message != 'exit':
+                print("Bye bye!")
+            else:
+                print("Um erro ocorreu!")
+                client.close()
             break
+    
+#layout da mensagem
 def write():
-    while True:                                                 #message layout
-        message_write = input('Write a message: ')
-        message = '{}: {}'.format(nickname, message_write)
-        client.send(message.encode('utf-8'))
+    while True:
+        message_write = input('> ')
+        if message_write == 'exit':
+            client.close()
+            sys.exit()
+        else:
+            message = '{}: {}'.format(nickname, message_write)
+            client.send(message.encode('utf-8'))
 
-receive_thread = threading.Thread(target=receive)               #receiving multiple messages
+#recebendo varias mensagens
+receive_thread = threading.Thread(target=receive)
 receive_thread.start()
-write_thread = threading.Thread(target=write)                   #sending messages 
+
+#enviando mensagens
+write_thread = threading.Thread(target=write) 
 write_thread.start()
