@@ -19,9 +19,10 @@ python client.py SERVER-IP PORT
 <li>ATENÇÃO: o arquivo <b>"database.py"</b> deve ficar no mesmo diretorio que <b>"chat_server.py"</b>.</li>
 
 <h2>Tecnologias utilizadas</h2>
-- [x] python
-- [x] sockets
-- [x] theread
+
+- [X] python   
+- [X] thread   
+- [X] sockets   
 - [ ] ssl
 
 <h2>Alunos</h2>
