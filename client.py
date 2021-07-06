@@ -1,5 +1,4 @@
-from database import *
-import socket, threading,sys
+import socket, threading, sys
 
 # Verifica se o nome e os argumentos foram corretamente entrados
 if(len(sys.argv) < 3) :
@@ -26,47 +25,49 @@ except:
 
 nickname = input("Escolha o seu nickname: ")
 senha = input("Forneça a senha: ")
-
-retorno = getUsuario(nickname,senha)
-if(retorno == []):
-    insertUsuario(nickname,senha)
-idUsuario = getUsuario(nickname,senha)[0][0]
-
-#printa todas as mensagens guardado no banco de dados na tela
-getMensagens()
-
+print('\n')
 # fazendo uma conexão valida
 def receive():
     while True:
         try:
-            message = client.recv(1024).decode('utf-8')
+            message = client.recv(4096).decode('utf-8')
             if message == 'NICKNAME':
                 client.send(nickname.encode('utf-8'))
+                client.send(senha.encode('utf-8'))
             else:
                 print(message)
         except:
-            if message != 'exit':
-                print("Bye bye!")
-            else:
-                print("Um erro ocorreu!")
-                client.close()
+            print("Bye bye!")
             break
     
 #layout da mensagem
 def write():
     while True:
         message_write = input('')
-        if message_write == 'exit':
-            client.close()
-            sys.exit()
-        else:
-            message = '{}: {}'.format(nickname, message_write)
-            client.send(message.encode('utf-8'))
-            insertMensagem(message_write,idUsuario)
+        sys.stdout.flush()
+        if(message_write != ''):
+            if message_write == 'exit':
+                client.close()
+                exit()
+            else:
+                message = '{}: {}'.format(nickname, message_write)
+                client.send(message.encode('utf-8'))
+
 #recebendo varias mensagens
 receive_thread = threading.Thread(target=receive)
 receive_thread.start()
 
-#enviando mensagens
-write_thread = threading.Thread(target=write) 
-write_thread.start()
+# valida se os dados de login estão corretos ou
+# se o usuario já está logado
+id = client.recv(4096).decode('utf-8')
+if id==str(-1) or id==str(-2):
+    if id==str(-1):
+        print("\nDados de login incorretos!")
+    else:
+        print("\nUsuario já logado!")
+    client.close()
+    sys.exit(0)
+else:
+    #enviando mensagens
+    write_thread = threading.Thread(target=write) 
+    write_thread.start()

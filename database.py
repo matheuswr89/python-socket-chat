@@ -1,11 +1,11 @@
-import sqlite3,sys
+import sqlite3
 
 def criarTabelas():
   try:
-      sqliteConnection = sqlite3.connect('bancoDeDados/database.db')
+      sqliteConnection = sqlite3.connect('database.db')
       tableMensagem = '''CREATE TABLE mensagens(
-                                  mensagem TEXT NOT NULL,
-                                  idUsuario INTEGER);'''
+                        id INTEGER PRIMARY KEY,
+                        mensagem TEXT NOT NULL);'''
       tableUser = '''CREATE TABLE user (
                                   id INTEGER PRIMARY KEY,
                                   email TEXT NOT NULL,
@@ -18,28 +18,28 @@ def criarTabelas():
       sqliteConnection.commit()
       cursor.close()
   except sqlite3.Error as error:
-      print("Error while creating a sqlite table", error)
+      print("Erro ao criar a tabela, ela já existe.", error)
   finally:
       if sqliteConnection:
           sqliteConnection.close()
 ################################################################
-def insertMensagem(mensagem, idUsuario):
+def insertMensagem(mensagem):
   try:
-      sqliteConnection = sqlite3.connect('bancoDeDados/database.db')
+      sqliteConnection = sqlite3.connect('database.db')
       cursor = sqliteConnection.cursor()
-      query = """INSERT INTO mensagens(mensagem ,idUsuario)  VALUES  (?, ?)"""
-      count = cursor.execute(query,(mensagem, idUsuario))
+      query = """INSERT INTO mensagens(mensagem) VALUES (?)"""
+      cursor.execute(query,(mensagem,))
       sqliteConnection.commit()
       cursor.close()
   except sqlite3.Error as error:
-      exc_type, exc_value, exc_tb = sys.exc_info()
+      print("Erro ao inserir os dados em mensagens.", error)
   finally:
       if (sqliteConnection):
           sqliteConnection.close()
 ################################################################
 def insertUsuario(email, senha):
   try:
-      sqliteConnection = sqlite3.connect('bancoDeDados/database.db')
+      sqliteConnection = sqlite3.connect('database.db')
       cursor = sqliteConnection.cursor()
       query = """INSERT INTO user(email, senha)  VALUES  (?, ?)"""
       usuario = (email, senha)
@@ -47,58 +47,42 @@ def insertUsuario(email, senha):
       sqliteConnection.commit()
       cursor.close()
   except sqlite3.Error as error:
-      exc_type, exc_value, exc_tb = sys.exc_info()
+      print("Erro ao inserir os dados em user.", error)
   finally:
       if (sqliteConnection):
           sqliteConnection.close()
 ################################################################
-def getUsuario(email, senha):
+def getUsuarioName(email):
   try:
-      sqliteConnection = sqlite3.connect('bancoDeDados/database.db')
+      sqliteConnection = sqlite3.connect('database.db')
       cursor = sqliteConnection.cursor()
 
-      query = """select id from user where email = ? and senha= ?"""
-      cursor.execute(query, (email,senha))
-      records = cursor.fetchall()
+      query = """select senha from user where email = ?"""
+      cursor.execute(query, (email,))
+      records = cursor.fetchone()
       cursor.close()
       return records
   except sqlite3.Error as error:
-      print("Failed to read data from sqlite table", error)
-  finally:
-      if sqliteConnection:
-          sqliteConnection.close()
-################################################################
-def getUsuarioName(id):
-  try:
-      sqliteConnection = sqlite3.connect('bancoDeDados/database.db')
-      cursor = sqliteConnection.cursor()
-
-      query = """select email from user where id = ?"""
-      cursor.execute(query, (id,))
-      records = cursor.fetchall()
-      cursor.close()
-      return records
-  except sqlite3.Error as error:
-      print("Failed to read data from sqlite table", error)
+      print("Erro ao ler os dados da tabela", error)
   finally:
       if sqliteConnection:
           sqliteConnection.close()
 ################################################################
 def getMensagens():
   try:
-      sqliteConnection = sqlite3.connect('bancoDeDados/database.db')
+      mensagens = []
+      sqliteConnection = sqlite3.connect('database.db')
       cursor = sqliteConnection.cursor()
-
-      query = """SELECT * from mensagens"""
+      query = """SELECT mensagem from mensagens"""
       cursor.execute(query)
       records = cursor.fetchall()
       for row in records:
-          retorno = getUsuarioName(int(row[1]))[0][0]
-          print('{}: {}'.format(retorno,row[0]))
+          message = str(row[0]).replace(str(row[0])[0],'').replace(str(row[0])[-1],'')
+          mensagens.append(message)
       cursor.close()
-
+      return mensagens
   except sqlite3.Error as error:
-      print("Failed to read data from sqlite table", error)
+      print("Erro ao ler os dados da tabela", error)
   finally:
       if sqliteConnection:
           sqliteConnection.close()
