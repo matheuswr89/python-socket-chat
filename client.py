@@ -1,3 +1,4 @@
+from database import *
 import socket, threading,sys
 
 # Verifica se o nome e os argumentos foram corretamente entrados
@@ -24,6 +25,15 @@ except:
     sys.exit()
 
 nickname = input("Escolha o seu nickname: ")
+senha = input("Forneça a senha: ")
+
+retorno = getUsuario(nickname,senha)
+if(retorno == []):
+    insertUsuario(nickname,senha)
+idUsuario = getUsuario(nickname,senha)[0][0]
+
+#printa todas as mensagens guardado no banco de dados na tela
+getMensagens()
 
 # fazendo uma conexão valida
 def receive():
@@ -45,14 +55,14 @@ def receive():
 #layout da mensagem
 def write():
     while True:
-        message_write = input('> ')
+        message_write = input('')
         if message_write == 'exit':
             client.close()
             sys.exit()
         else:
             message = '{}: {}'.format(nickname, message_write)
             client.send(message.encode('utf-8'))
-
+            insertMensagem(message_write,idUsuario)
 #recebendo varias mensagens
 receive_thread = threading.Thread(target=receive)
 receive_thread.start()

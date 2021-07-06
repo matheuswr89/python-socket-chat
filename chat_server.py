@@ -1,4 +1,7 @@
+from database import criarTabelas
 import socket, threading, sys
+
+criarTabelas()
 
 # Verifica se o nome e os argumentos foram corretamente entrados
 if(len(sys.argv) < 2) :
@@ -14,7 +17,7 @@ except:
 #inicia o socket
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
 #associando o host e a porta
-server.bind(('10.8.0.8', PORT))                                   
+server.bind(('127.0.0.1', PORT))                                   
 server.listen()
 print("Server inicializado na porta " + str(PORT))
 
