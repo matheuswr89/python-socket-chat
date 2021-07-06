@@ -2,7 +2,7 @@ import sqlite3,sys
 
 def criarTabelas():
   try:
-      sqliteConnection = sqlite3.connect('database.db')
+      sqliteConnection = sqlite3.connect('bancoDeDados/database.db')
       tableMensagem = '''CREATE TABLE mensagens(
                                   mensagem TEXT NOT NULL,
                                   idUsuario INTEGER);'''
@@ -25,7 +25,7 @@ def criarTabelas():
 ################################################################
 def insertMensagem(mensagem, idUsuario):
   try:
-      sqliteConnection = sqlite3.connect('database.db')
+      sqliteConnection = sqlite3.connect('bancoDeDados/database.db')
       cursor = sqliteConnection.cursor()
       query = """INSERT INTO mensagens(mensagem ,idUsuario)  VALUES  (?, ?)"""
       count = cursor.execute(query,(mensagem, idUsuario))
@@ -39,7 +39,7 @@ def insertMensagem(mensagem, idUsuario):
 ################################################################
 def insertUsuario(email, senha):
   try:
-      sqliteConnection = sqlite3.connect('database.db')
+      sqliteConnection = sqlite3.connect('bancoDeDados/database.db')
       cursor = sqliteConnection.cursor()
       query = """INSERT INTO user(email, senha)  VALUES  (?, ?)"""
       usuario = (email, senha)
@@ -54,7 +54,7 @@ def insertUsuario(email, senha):
 ################################################################
 def getUsuario(email, senha):
   try:
-      sqliteConnection = sqlite3.connect('database.db')
+      sqliteConnection = sqlite3.connect('bancoDeDados/database.db')
       cursor = sqliteConnection.cursor()
 
       query = """select id from user where email = ? and senha= ?"""
@@ -70,7 +70,7 @@ def getUsuario(email, senha):
 ################################################################
 def getUsuarioName(id):
   try:
-      sqliteConnection = sqlite3.connect('database.db')
+      sqliteConnection = sqlite3.connect('bancoDeDados/database.db')
       cursor = sqliteConnection.cursor()
 
       query = """select email from user where id = ?"""
@@ -86,7 +86,7 @@ def getUsuarioName(id):
 ################################################################
 def getMensagens():
   try:
-      sqliteConnection = sqlite3.connect('database.db')
+      sqliteConnection = sqlite3.connect('bancoDeDados/database.db')
       cursor = sqliteConnection.cursor()
 
       query = """SELECT * from mensagens"""
