@@ -28,7 +28,7 @@ def insertMensagem(mensagem):
       sqliteConnection = sqlite3.connect('database.db')
       cursor = sqliteConnection.cursor()
       query = """INSERT INTO mensagens(mensagem) VALUES (?)"""
-      cursor.execute(query,(mensagem,))
+      cursor.execute(query,(mensagem.decode('utf-8'),))
       sqliteConnection.commit()
       cursor.close()
   except sqlite3.Error as error:
@@ -70,15 +70,14 @@ def getUsuarioName(email):
 ################################################################
 def getMensagens():
   try:
-      mensagens = []
+      mensagens = ''
       sqliteConnection = sqlite3.connect('database.db')
       cursor = sqliteConnection.cursor()
       query = """SELECT mensagem from mensagens"""
       cursor.execute(query)
       records = cursor.fetchall()
       for row in records:
-          message = str(row[0]).replace(str(row[0])[0],'').replace(str(row[0])[-1],'')
-          mensagens.append(message)
+          mensagens+= '\n'+str(row[0])
       cursor.close()
       return mensagens
   except sqlite3.Error as error:
