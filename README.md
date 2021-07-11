@@ -22,7 +22,8 @@ python client.py SERVER-IP PORT
 
 - [X] python   
 - [X] thread   
-- [X] sockets   
+- [X] sockets
+- [X] tkinter   
 - [ ] ssl
 
 <h2>Alunos</h2>
