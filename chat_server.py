@@ -3,17 +3,15 @@ import socket
 import threading
 import sys
 
-criarTabelas()
-
 # Verifica se o nome e os argumentos foram corretamente entrados
 if(len(sys.argv) < 2):
-    print('Uso: python chat_server.py PORT')
+    print('\n\nUso: python chat_server.py PORT\n\n')
     sys.exit()
 # Verifica se a porta é um numero inteiro
 try:
     PORT = int(sys.argv[1])
 except:
-    print('Forneça uma porta!')
+    print('\n\nForneça uma porta!\n\n')
     sys.exit()
 
 # inicia o socket
@@ -29,6 +27,8 @@ server.bind((host, PORT))
 
 server.listen()
 print("Server inicializado na porta " + str(PORT))
+
+criarTabelas()
 
 clients = []
 nicknames = []
@@ -63,7 +63,8 @@ def handle(client):
             clients.remove(client)
             client.close()
             nickname = nicknames[index]
-            broadcast('{} saiu da conversa!'.format(nickname).encode('utf-8'))
+            print('{} saiu.'.format(nickname))
+            broadcast('{} saiu da conversa!\n'.format(nickname).encode('utf-8'))
             nicknames.remove(nickname)
             break
 
@@ -83,7 +84,7 @@ def receive():
                     nicknames.append(nickname)
                     clients.append(client)
                     print("Seu nickname {}".format(nickname))
-                    broadcast("{} entrou!".format(nickname).encode('utf-8'))
+                    broadcast("{} entrou!\n".format(nickname).encode('utf-8'))
                     mensagens = getMensagens()
                     client.send(mensagens.encode('utf-8'))
                     thread = threading.Thread(target=handle, args=(client,))
@@ -108,6 +109,5 @@ def verificaUser(nickname, senha):
             return 0
         else:
             return -1
-
 
 receive()

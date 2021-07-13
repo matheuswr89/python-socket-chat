@@ -1,8 +1,7 @@
+from tkinter import messagebox, Frame, Tk, Text, Label, Button, Scrollbar, END, VERTICAL, Entry, StringVar
 import socket
 import threading
 import sys
-from tkinter import *
-from tkinter import messagebox
 
 # Verifica se o nome e os argumentos foram corretamente entrados
 if(len(sys.argv) < 3):
@@ -27,19 +26,36 @@ except:
     print('\n\nErro ao conectar com o servidor\n\n')
     sys.exit()
 
-#verifica se os dados de login foram entrados corretamente
+# fazendo uma conexão valida
+def receive():
+    while True:
+        try:
+            message = client.recv(4096).decode('utf-8')
+            chat_transcript_area.insert('end', message)
+            chat_transcript_area.yview(END)
+        except Exception as error:
+            print(error)
+            if error.args[0] == 10054:
+                client.close()
+                root.destroy()
+                break
+            break
+    exit(0)
+
+# verifica se os dados de login foram entrados corretamente
 def login_verify():
     global nickname, senha
     nickname = username_verify.get()
     senha = password_verify.get()
     username_login_entry.delete(0, END)
     password_login_entry.delete(0, END)
-    if nickname == '' and senha == '':
+    if nickname == '' or senha == '':
         messagebox.showerror("Erro", "Os campos não pode ficar vazios.")
     else:
-        # recebendo varias mensagens
-        receive_thread = threading.Thread(target=receive)
-        receive_thread.start()
+        message = client.recv(4096).decode('utf-8')
+        if message == 'NICKNAME':
+            client.send(nickname.encode('utf-8'))
+            client.send(senha.encode('utf-8'))
 
         # valida se os dados de login estão corretos ou
         # se o usuario já está logado
@@ -56,30 +72,12 @@ def login_verify():
             login_screen.destroy()
             writeGUI()
 
-# fazendo uma conexão valida
-def receive():
-    while True:
-        try:
-            message = client.recv(4096).decode('utf-8')
-            if message == 'NICKNAME':
-                client.send(nickname.encode('utf-8'))
-                client.send(senha.encode('utf-8'))
-            else:
-                try:
-                    chat_transcript_area.insert('end', message+'\n')
-                    chat_transcript_area.yview(END)
-                except Exception as e:
-                    print(e)
-        except Exception as error:
-            print(error)
-            break
-
-#verifica se foi apertado a tecla enter
+# verifica se foi apertado a tecla enter
 def on_enter_key_pressed(event):
     sendChat()
     clear_text()
 
-#limpa o texto do componente text
+# limpa o texto do componente text
 def clear_text():
     enter_text_widget.delete(1.0, 'end')
 
@@ -87,10 +85,10 @@ def clear_text():
 def sendChat():
     data = enter_text_widget.get(1.0, 'end').strip()
     if data != '':
-        message = '{}: {}'.format(nickname, data)
+        message = '{}: {}\n'.format(nickname, data)
         client.send(message.encode('utf-8'))
-    
-#GUI do chat
+
+# GUI do chat
 def writeGUI():
     global root, chat_transcript_area, enter_text_widget
     root = Tk()
@@ -104,6 +102,7 @@ def writeGUI():
     scrollbar = Scrollbar(
         frame, command=chat_transcript_area.yview, orient=VERTICAL)
     chat_transcript_area.config(yscrollcommand=scrollbar.set)
+    chat_transcript_area.bind("<Key>", lambda a: "break")
     chat_transcript_area.pack(side='left', padx=10)
     scrollbar.pack(side='right', fill='y')
     frame.pack(side='top')
@@ -111,10 +110,9 @@ def writeGUI():
             font=("Serif", 12)).pack(side='top')
     enter_text_widget = Text(
         root, width=60, height=1, font=("Serif", 12))
+    enter_text_widget.focus_set()
     enter_text_widget.pack(side='bottom', pady=1)
-    enter_text_widget.focus_set()
     enter_text_widget.bind('<Return>', on_enter_key_pressed)
-    enter_text_widget.focus_set()
     screen_width = root.winfo_screenwidth()
     screen_height = root.winfo_screenheight()
     x_cordinate = int((screen_width/2) - (400/2))
@@ -122,22 +120,25 @@ def writeGUI():
 
     root.geometry(
         "{}x{}+{}+{}".format(400, 270, x_cordinate, y_cordinate))
+    # recebendo varias mensagens
+    receive_thread = threading.Thread(target=receive)
+    receive_thread.start()
     root.mainloop()
 
-#verifica se o usuario quer fechar a janela do chat
+# verifica se o usuario quer fechar a janela do chat
 def on_closing_chat():
     if messagebox.askokcancel("Sair", "Deseja sair do chat?"):
         root.destroy()
         client.close()
         exit(0)
 
-#verifica se o usuario quer fechar a janela de login
+# verifica se o usuario quer fechar a janela de login
 def on_closing():
     if messagebox.askokcancel("Sair", "Deseja sair do login?"):
         login_screen.destroy()
         exit(0)
 
-#verifica se foi apertado a tecla enter
+# verifica se foi apertado a tecla enter
 def on_enter_key_login_pressed(event):
     login_verify()
 

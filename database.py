@@ -77,7 +77,7 @@ def getMensagens():
       cursor.execute(query)
       records = cursor.fetchall()
       for row in records:
-          mensagens+= '\n'+str(row[0])
+          mensagens+= str(row[0])
       cursor.close()
       return mensagens
   except sqlite3.Error as error:
