@@ -1,0 +1,2 @@
+./certificados/cert-meucertificado.pem
+./certificados/priv-minhachave.pem

@@ -7,24 +7,30 @@ Execute os seguintes comandos em terminais diferentes:
 <li><b>Servidor:</b> 
 
 ```
-python chat_server.py PORT
+python3 chat_server.py PORT
 ```
+<li>ATENÇÃO: o arquivo <b>"database.py"</b> deve ficar no mesmo diretorio que <b>"server.py"</b>.</li>
 </li>
 <li><b>Cliente:</b>
 
 ```
-python client.py SERVER-IP PORT
+python3 client.py SERVER-IP PORT
 ```
 </li>
-<li>ATENÇÃO: o arquivo <b>"database.py"</b> deve ficar no mesmo diretorio que <b>"chat_server.py"</b>.</li>
+<li><b>P2P:</b> 
 
+```
+python3 p2p.py
+```
+</li>
+<li>ATENÇÃO: coloque o caminho do certificado e da chave privada em <b>"caminho-certificado.txt"</b>.</li>
 <h2>Tecnologias utilizadas</h2>
 
 - [X] python   
 - [X] thread   
 - [X] sockets
 - [X] tkinter   
-- [ ] ssl
+- [X] ssl
 
 <h2>Alunos</h2>
 <table>

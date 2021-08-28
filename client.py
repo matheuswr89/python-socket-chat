@@ -1,7 +1,13 @@
 from tkinter import messagebox, Frame, Tk, Text, Label, Button, Scrollbar, END, VERTICAL, Entry, StringVar
 import socket
+import ssl
 import threading
 import sys
+
+f = open('caminho-certificado.txt', 'r')
+linhas = f.read().split('\n')
+CERT_FILE = linhas[0]
+f.close()
 
 # Verifica se o nome e os argumentos foram corretamente entrados
 if(len(sys.argv) < 3):
@@ -20,29 +26,35 @@ except:
 try:
     # inicia o socket
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    # conecta o usuario ao servidor
-    client.connect((host, port))
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    context.load_verify_locations(CERT_FILE)
+    clientSocket_ssl = context.wrap_socket(client, server_hostname=host)
+    clientSocket_ssl.connect((host, port))
 except:
     print('\n\nErro ao conectar com o servidor\n\n')
     sys.exit()
 
 # fazendo uma conexão valida
+
+
 def receive():
     while True:
         try:
-            message = client.recv(4096).decode('utf-8')
-            chat_transcript_area.insert('end', message)
+            message = clientSocket_ssl.recv(4096)
+            chat_transcript_area.insert('end', message.decode('utf-8'))
             chat_transcript_area.yview(END)
         except Exception as error:
             print(error)
             if error.args[0] == 10054:
-                client.close()
+                clientSocket_ssl.close()
                 root.destroy()
                 break
             break
     exit(0)
 
 # verifica se os dados de login foram entrados corretamente
+
+
 def login_verify():
     global nickname, senha
     nickname = username_verify.get()
@@ -52,43 +64,51 @@ def login_verify():
     if nickname == '' or senha == '':
         messagebox.showerror("Erro", "Os campos não pode ficar vazios.")
     else:
-        message = client.recv(4096).decode('utf-8')
+        message = clientSocket_ssl.recv(4096).decode('utf-8')
         if message == 'NICKNAME':
-            client.send(nickname.encode('utf-8'))
-            client.send(senha.encode('utf-8'))
+            clientSocket_ssl.send(nickname.encode('utf-8'))
+            clientSocket_ssl.send(senha.encode('utf-8'))
 
         # valida se os dados de login estão corretos ou
         # se o usuario já está logado
-        id = client.recv(4096).decode('utf-8')
+        id = clientSocket_ssl.recv(4096).decode('utf-8')
         if id == str(-1) or id == str(-2):
             if id == str(-1):
                 messagebox.showerror("Erro", "Dados de login invalidos.")
             else:
                 messagebox.showerror("Erro", "Usuario já logado.")
             login_screen.destroy()
-            client.close()
+            clientSocket_ssl.close()
             sys.exit(0)
         else:
             login_screen.destroy()
             writeGUI()
 
 # verifica se foi apertado a tecla enter
+
+
 def on_enter_key_pressed(event):
     sendChat()
     clear_text()
 
 # limpa o texto do componente text
+
+
 def clear_text():
     enter_text_widget.delete(1.0, 'end')
 
 # monta o layout da mensagem e o envia
+
+
 def sendChat():
     data = enter_text_widget.get(1.0, 'end').strip()
     if data != '':
         message = '{}: {}\n'.format(nickname, data)
-        client.send(message.encode('utf-8'))
+        clientSocket_ssl.send(message.encode('utf-8'))
 
 # GUI do chat
+
+
 def writeGUI():
     global root, chat_transcript_area, enter_text_widget
     root = Tk()
@@ -96,7 +116,7 @@ def writeGUI():
     root.protocol("WM_DELETE_WINDOW", on_closing_chat)
     frame = Frame(root)
     Label(frame, text='Chat Box:',
-            font=("Serif", 12)).pack(side='top')
+          font=("Serif", 12)).pack(side='top')
     chat_transcript_area = Text(
         frame, width=60, height=10, font=("Serif", 12))
     scrollbar = Scrollbar(
@@ -107,7 +127,7 @@ def writeGUI():
     scrollbar.pack(side='right', fill='y')
     frame.pack(side='top')
     Label(root, text='Enter message:',
-            font=("Serif", 12)).pack(side='top')
+          font=("Serif", 12)).pack(side='top')
     enter_text_widget = Text(
         root, width=60, height=1, font=("Serif", 12))
     enter_text_widget.focus_set()
@@ -126,23 +146,31 @@ def writeGUI():
     root.mainloop()
 
 # verifica se o usuario quer fechar a janela do chat
+
+
 def on_closing_chat():
     if messagebox.askokcancel("Sair", "Deseja sair do chat?"):
         root.destroy()
-        client.close()
+        clientSocket_ssl.close()
         exit(0)
 
 # verifica se o usuario quer fechar a janela de login
+
+
 def on_closing():
     if messagebox.askokcancel("Sair", "Deseja sair do login?"):
         login_screen.destroy()
         exit(0)
 
 # verifica se foi apertado a tecla enter
+
+
 def on_enter_key_login_pressed(event):
     login_verify()
 
 # GUI tela login
+
+
 def main_account_screen():
     global login_screen, username_verify, username_login_entry
     global password_verify, password_login_entry
@@ -170,7 +198,7 @@ def main_account_screen():
     password_login_entry.bind('<Return>', on_enter_key_login_pressed)
     Label(login_screen, text="").pack()
     Button(login_screen, text="Login", width=10,
-            height=1, command=login_verify).pack()
+           height=1, command=login_verify).pack()
 
     screen_width = login_screen.winfo_screenwidth()
     screen_height = login_screen.winfo_screenheight()
@@ -182,5 +210,6 @@ def main_account_screen():
         "{}x{}+{}+{}".format(300, 210, x_cordinate, y_cordinate))
 
     login_screen.mainloop()
+
 
 main_account_screen()
