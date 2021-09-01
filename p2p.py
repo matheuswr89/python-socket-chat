@@ -58,8 +58,7 @@ class Chat_Server(threading.Thread):
                             print("Server broken")
                             break
                         print(user + ': ' + data)
-                        chat_transcript_area.insert(
-                            'end', user + ': ' + data+"\n")
+                        chat_transcript_area.insert('end', data+"\n")
                         chat_transcript_area.yview(END)
                 time.sleep(0)
             print("Server closed. Type \"exit()\" to quit.")
@@ -98,14 +97,14 @@ class Chat_Client(threading.Thread):
                     ready, steady, nah = select.select(
                         [self.sock_ssl], [self.sock_ssl], [])
                     if ready:
+                        self.sock_ssl.send(user.encode('utf-8'))
                         data = self.sock_ssl.recv(4096)
                         data = bytes.decode(data, 'utf-8')
                         if not data:
                             self.sock_ssl.send("Client broken".encode("utf-8"))
                             print("Client broken")
                             break
-                        chat_transcript_area.insert(
-                            'end', user + ': ' + data+"\n")
+                        chat_transcript_area.insert('end', data+"\n")
                         chat_transcript_area.yview(END)
                 time.sleep(0)
                 print("Client closed. Type \"exit()\" to quit.")
@@ -174,11 +173,11 @@ class P2PGui(Frame):
         text = enter_text_widget.get(1.0, 'end').strip().encode('utf-8')
         if(text != ''):
             try:
-                chat_client.sock_ssl.sendall(text)
+                chat_client.sock_ssl.sendall(user+": "+text)
             except:
                 Exception()
             try:
-                chat_server.conn.sendall(text)
+                chat_server.conn.sendall(user+": "+text)
             except:
                 Exception()
 
