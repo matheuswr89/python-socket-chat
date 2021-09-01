@@ -57,7 +57,6 @@ class Chat_Server(threading.Thread):
                             self.conn.send("Server broken".encode("utf-8"))
                             print("Server broken")
                             break
-                        print(user + ': ' + data)
                         chat_transcript_area.insert('end', data+"\n")
                         chat_transcript_area.yview(END)
                 time.sleep(0)
